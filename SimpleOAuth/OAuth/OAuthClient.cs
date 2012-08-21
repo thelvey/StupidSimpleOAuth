@@ -175,13 +175,6 @@ namespace SimpleOAuth.OAuth
 
                 StreamReader sr = new StreamReader(s);
                 result = sr.ReadToEnd();
-
-                // authorized throttle
-                //System.Threading.Thread.Sleep(new TimeSpan(0, 0, 11));
-
-                //non authorized
-                //System.Threading.Thread.Sleep(new TimeSpan(0, 0, 25));
-
             }
             catch (Exception exc)
             {
@@ -223,20 +216,18 @@ namespace SimpleOAuth.OAuth
         {
             return ((int)DateTime.Now.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalSeconds).ToString();
         }
-        private static string BuildBaseString(string url, List<KeyValuePair<string, string>> parameters)
+        internal static string BuildBaseString(string url, List<KeyValuePair<string, string>> parameters)
         {
             return BuildBaseString("GET", url, parameters);
         }
-        private static string BuildBaseString(string verb, string url, List<KeyValuePair<string, string>> parameters)
+        internal static string BuildBaseString(string verb, string url, List<KeyValuePair<string, string>> parameters)
         {
             string result = string.Empty;
 
             result += verb + "&";
             result += UrlEncode(url) + "&";
 
-            var ps = from kvp in parameters
-                     orderby kvp.Key
-                     select kvp;
+            var ps = parameters.OrderBy(p => p.Key);
 
             string paramstring = String.Empty;
 
@@ -249,8 +240,13 @@ namespace SimpleOAuth.OAuth
 
             return result;
         }
-
-        private static string UrlEncode(string input)
+        /// <summary>
+        /// Url Encode based on OAuth spec
+        /// HttpUtility.UrlEncode uses lower case letters for the encoded hex values
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        internal static string UrlEncode(string input)
         {
             string result = input;
 
