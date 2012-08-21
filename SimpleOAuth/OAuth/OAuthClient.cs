@@ -24,18 +24,18 @@ namespace SimpleOAuth.OAuth
         private string OAuthVersion = "1.0";
         private string SignatureMethod = "HMAC-SHA1";
 
-        private string UserAuthUrl { get; set; }
-        private string RequestTokenUrl { get; set; }
-        private string AccessTokenUrl { get; set; }
+        private readonly string _userAuthUrl;
+        private readonly string _requestTokenUrl;
+        private readonly string _accessTokenUrl;
 
-        private string ConsumerSecret { get; set; }
-        private string ConsumerKey { get; set; }
+        public string ConsumerSecret { get; set; }
+        public string ConsumerKey { get; set; }
 
         public OAuthClient(string userAuthUrl, string requestTokenUrl, string accessTokenUrl, string consumerSecret = null, string consumerKey = null)
         {
-            UserAuthUrl = userAuthUrl;
-            RequestTokenUrl = requestTokenUrl;
-            AccessTokenUrl = accessTokenUrl;
+            _userAuthUrl = userAuthUrl;
+            _requestTokenUrl = requestTokenUrl;
+            _accessTokenUrl = accessTokenUrl;
             ConsumerSecret = consumerSecret;
             ConsumerKey = consumerKey;
         }
@@ -57,7 +57,7 @@ namespace SimpleOAuth.OAuth
             requestParams.Add(new KeyValuePair<string, string>("oauth_verifier", verifier));
             requestParams.Add(new KeyValuePair<string, string>("oauth_version", OAuthVersion));
 
-            string response = BuildAndExecuteRequest(AccessTokenUrl, ConsumerSecret + "&" + tokenSecret, requestParams);
+            string response = BuildAndExecuteRequest(_accessTokenUrl, ConsumerSecret + "&" + tokenSecret, requestParams);
 
             Dictionary<string, string> args = SplitResponseParams(response);
 
@@ -85,13 +85,13 @@ namespace SimpleOAuth.OAuth
             requestParams.Add(new KeyValuePair<string, string>("oauth_version", OAuthVersion));
 
             // at this point call the new method
-            string response = BuildAndExecuteRequest(RequestTokenUrl, ConsumerSecret + "&", requestParams);
+            string response = BuildAndExecuteRequest(_requestTokenUrl, ConsumerSecret + "&", requestParams);
             Dictionary<string, string> args = SplitResponseParams(response);
 
             if (args.ContainsKey("oauth_token"))
             {
                 //http://vimeo.com/oauth/authorize
-                result.AuthUrl = UserAuthUrl + "?oauth_token=" + args["oauth_token"] + "&permission=read";
+                result.AuthUrl = _userAuthUrl + "?oauth_token=" + args["oauth_token"] + "&permission=read";
                 result.OAuthTokenSecret = args["oauth_token_secret"];
             }
 
