@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Implementations\Twitter.cs" />
     <Compile Include="Json\DynamicJsonObject.cs" />
+    <Compile Include="OAuth\Helpers.cs" />
     <Compile Include="OAuth\OAuthClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tests\OAuth\Client.cs" />
