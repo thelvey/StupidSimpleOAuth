@@ -32,12 +32,16 @@ namespace SimpleOAuth.OAuth
         public string ConsumerKey { get; set; }
 
         private static IOAuthHelpers _helpers = new Helpers();
-        internal static void SetHelperImplementation(IOAuthHelpers helpers)
+        internal void SetHelperImplementation(IOAuthHelpers helpers)
         {
             _helpers = helpers;
         }
 
         private static IOAuthRequest _requestImplementation = new OAuthRequest();
+        internal void SetRequestImplementation(IOAuthRequest request)
+        {
+            _requestImplementation = request;
+        }
 
         public OAuthClient(string userAuthUrl, string requestTokenUrl, string accessTokenUrl, string consumerSecret = null, string consumerKey = null)
         {
@@ -50,6 +54,8 @@ namespace SimpleOAuth.OAuth
 
         public AccessToken ExchangeForAccessToken(string authToken, string tokenSecret, string verifier)
         {
+            ValidateArguments();
+
             AccessToken result = new AccessToken();
 
             string timeStamp = _helpers.BuildTimestamp();

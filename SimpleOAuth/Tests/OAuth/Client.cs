@@ -16,12 +16,8 @@ namespace SimpleOAuth.Tests.OAuth
         private const string USER_AUTH_URL = "userAuthUrl";
         private const string REQUEST_TOKEN_URL = "requestTokenUrl";
         private const string ACCESS_TOKEN_URL = "accessTokenUrl";
-
-        [TestFixtureSetUp]
-        public void TearDown()
-        {
-            OAuthClient.SetHelperImplementation(helpers);
-        }
+        private const string CONSUMER_SECRET = "consumerSecret";
+        private const string CONSUMER_KEY = "consumerKey";
 
         [Test]
         public void GenerateUnauthorizedRequestWithoutArguments()
@@ -137,6 +133,46 @@ namespace SimpleOAuth.Tests.OAuth
             using (mr.Playback())
             {
                 request.BuildAndExecuteRequest(testUrl, consumerKey, args);
+            }
+        }
+
+        [Test]
+        public void ExchangeForAccessToken()
+        {
+            MockRepository m = new MockRepository();
+
+            IOAuthHelpers _helpers = m.DynamicMock<IOAuthHelpers>();
+            IOAuthRequest _request = m.DynamicMock<IOAuthRequest>();
+
+            OAuthClient client = new OAuthClient(USER_AUTH_URL, REQUEST_TOKEN_URL, ACCESS_TOKEN_URL, CONSUMER_SECRET, CONSUMER_KEY);
+            client.SetHelperImplementation(_helpers);
+            client.SetRequestImplementation(_request);
+
+            string timeStamp = "TIMESTAMP";
+            string nonce = "NONCE";
+            string tokenSecret = "tokenSecret";
+            string responseToken = "responseToken";
+            string responseTokenSecret = "responseTokenSecret";
+
+            Dictionary<string, string> responseParameters = new Dictionary<string, string>();
+            responseParameters.Add("oauth_token", responseToken);
+            responseParameters.Add("oauth_token_secret", responseTokenSecret);
+
+            using (m.Record())
+            {
+                _helpers.Expect(h => h.BuildTimestamp()).Return(timeStamp);
+                _helpers.Expect(h => h.BuildNonce()).Return(nonce);
+
+                _request.Expect(r => r.BuildAndExecuteRequest(ACCESS_TOKEN_URL, CONSUMER_SECRET + "&" + tokenSecret, null)).IgnoreArguments().Return("response");
+
+                _helpers.Expect(h => h.SplitResponseParams(null)).IgnoreArguments().Return(responseParameters);
+            }
+            using (m.Playback())
+            {
+                AccessToken result = client.ExchangeForAccessToken("authToken", tokenSecret, "verifier");
+
+                Assert.AreEqual(responseToken, result.OAuthToken);
+                Assert.AreEqual(responseTokenSecret, result.OAuthTokenSecret);
             }
         }
     }
