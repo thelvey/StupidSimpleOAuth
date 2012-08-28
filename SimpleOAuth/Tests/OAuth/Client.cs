@@ -19,6 +19,9 @@ namespace SimpleOAuth.Tests.OAuth
         private const string CONSUMER_SECRET = "consumerSecret";
         private const string CONSUMER_KEY = "consumerKey";
 
+        string timeStamp = "TIMESTAMP";
+        string nonce = "NONCE";
+
         [Test]
         public void GenerateUnauthorizedRequestWithoutArguments()
         {
@@ -148,8 +151,7 @@ namespace SimpleOAuth.Tests.OAuth
             client.SetHelperImplementation(_helpers);
             client.SetRequestImplementation(_request);
 
-            string timeStamp = "TIMESTAMP";
-            string nonce = "NONCE";
+            
             string tokenSecret = "tokenSecret";
             string responseToken = "responseToken";
             string responseTokenSecret = "responseTokenSecret";
@@ -172,6 +174,43 @@ namespace SimpleOAuth.Tests.OAuth
                 AccessToken result = client.ExchangeForAccessToken("authToken", tokenSecret, "verifier");
 
                 Assert.AreEqual(responseToken, result.OAuthToken);
+                Assert.AreEqual(responseTokenSecret, result.OAuthTokenSecret);
+            }
+        }
+        [Test]
+        public void GenerateUnauthorizedRequestToken()
+        {
+            MockRepository m = new MockRepository();
+
+            IOAuthHelpers helpers = m.DynamicMock<IOAuthHelpers>();
+            IOAuthRequest request = m.DynamicMock<IOAuthRequest>();
+
+            OAuthClient client = new OAuthClient(USER_AUTH_URL, REQUEST_TOKEN_URL, ACCESS_TOKEN_URL, CONSUMER_SECRET, CONSUMER_KEY);
+            client.SetHelperImplementation(helpers);
+            client.SetRequestImplementation(request);
+
+            string tokenSecret = "tokenSecret";
+            string responseToken = "responseToken";
+            string responseTokenSecret = "responseTokenSecret";
+
+            Dictionary<string, string> responseParameters = new Dictionary<string, string>();
+            responseParameters.Add("oauth_token", responseToken);
+            responseParameters.Add("oauth_token_secret", responseTokenSecret);
+
+            using (m.Record())
+            {
+                helpers.Expect(h => h.BuildTimestamp()).Return(timeStamp);
+                helpers.Expect(h => h.BuildNonce()).Return(nonce);
+
+                request.Expect(r => r.BuildAndExecuteRequest(ACCESS_TOKEN_URL, CONSUMER_SECRET, null)).IgnoreArguments().Return("response");
+
+                helpers.Expect(h => h.SplitResponseParams(null)).IgnoreArguments().Return(responseParameters);
+            }
+            using (m.Playback())
+            {
+                AuthRequestResult result = client.GenerateUnauthorizedRequestToken();
+
+                Assert.AreEqual(USER_AUTH_URL + "?oauth_token=" + responseToken + "&permission=read", result.AuthUrl);
                 Assert.AreEqual(responseTokenSecret, result.OAuthTokenSecret);
             }
         }

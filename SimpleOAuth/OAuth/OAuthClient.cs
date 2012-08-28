@@ -105,6 +105,7 @@ namespace SimpleOAuth.OAuth
             if (args.ContainsKey("oauth_token"))
             {
                 //http://vimeo.com/oauth/authorize
+                //todo: this needs changed to be made not specific to twitter
                 result.AuthUrl = _userAuthUrl + "?oauth_token=" + args["oauth_token"] + "&permission=read";
                 result.OAuthTokenSecret = args["oauth_token_secret"];
             }
@@ -112,6 +113,10 @@ namespace SimpleOAuth.OAuth
             return result;
         }
         public dynamic JsonMethod(string url, string authToken, string tokenSecret, List<KeyValuePair<string, string>> requestParams = null)
+        {
+            return JsonMethod(url, authToken, tokenSecret, new Json.DynamicJsonObject.DynamicJsonConverter(), requestParams);
+        }
+        internal dynamic JsonMethod(string url, string authToken, string tokenSecret, JavaScriptConverter jsConverter, List<KeyValuePair<string, string>> requestParams = null)
         {
             dynamic result = null;
 
@@ -137,7 +142,7 @@ namespace SimpleOAuth.OAuth
             if (!String.IsNullOrEmpty(response))
             {
                 JavaScriptSerializer jss = new JavaScriptSerializer();
-                jss.RegisterConverters(new JavaScriptConverter[] { new Json.DynamicJsonObject.DynamicJsonConverter() });
+                jss.RegisterConverters(new JavaScriptConverter[] { jsConverter });
 
                 try
                 {
