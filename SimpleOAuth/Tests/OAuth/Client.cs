@@ -5,6 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using SimpleOAuth.OAuth;
 using Rhino.Mocks;
+using SimpleOAuth.Tests.Json;
 
 namespace SimpleOAuth.Tests.OAuth
 {
@@ -97,7 +98,7 @@ namespace SimpleOAuth.Tests.OAuth
         {
             List<string> nonces = new List<string>();
 
-            for(int i = 0; i < 1000; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 nonces.Add(helpers.BuildNonce());
             }
@@ -122,8 +123,8 @@ namespace SimpleOAuth.Tests.OAuth
             string consumerKey = "CONSUMER_KEY";
             string signature = "SIGNATURE";
             byte[] bytes = new byte[1] { (byte)1 };
-            List<KeyValuePair<string, string>> args = new List<KeyValuePair<string,string>>();
-            args.Add(new KeyValuePair<string,string>("key", "value"));
+            List<KeyValuePair<string, string>> args = new List<KeyValuePair<string, string>>();
+            args.Add(new KeyValuePair<string, string>("key", "value"));
 
             using (mr.Record())
             {
@@ -151,7 +152,7 @@ namespace SimpleOAuth.Tests.OAuth
             client.SetHelperImplementation(_helpers);
             client.SetRequestImplementation(_request);
 
-            
+
             string tokenSecret = "tokenSecret";
             string responseToken = "responseToken";
             string responseTokenSecret = "responseTokenSecret";
@@ -213,6 +214,102 @@ namespace SimpleOAuth.Tests.OAuth
                 Assert.AreEqual(USER_AUTH_URL + "?oauth_token=" + responseToken + "&permission=read", result.AuthUrl);
                 Assert.AreEqual(responseTokenSecret, result.OAuthTokenSecret);
             }
+        }
+        [Test]
+        public void JsonMethodInvalidJson()
+        {
+            MockRepository m = new MockRepository();
+
+            IOAuthHelpers helpers = m.DynamicMock<IOAuthHelpers>();
+            IOAuthRequest request = m.DynamicMock<IOAuthRequest>();
+
+            OAuthClient client = new OAuthClient(USER_AUTH_URL, REQUEST_TOKEN_URL, ACCESS_TOKEN_URL, CONSUMER_SECRET, CONSUMER_KEY);
+            client.SetHelperImplementation(helpers);
+            client.SetRequestImplementation(request);
+
+            string tokenSecret = "tokenSecret";
+            string authToken = "authToken";
+
+            string methodUrl = "methodUrl";
+
+            using (m.Record())
+            {
+                helpers.Expect(h => h.BuildTimestamp()).Return(timeStamp);
+                helpers.Expect(h => h.BuildNonce()).Return(nonce);
+
+                request.Expect(r => r.BuildAndExecuteRequest(ACCESS_TOKEN_URL, CONSUMER_SECRET, null)).IgnoreArguments().Return("response");
+
+            }
+            using (m.Playback())
+            {
+                Assert.Throws(typeof(InvalidJsonInputException), delegate
+                {
+                    client.JsonMethod(methodUrl, authToken, tokenSecret, new MockJavaScriptConverter());
+                });
+            }
+        }
+        [Test]
+        public void JsonMethod()
+        {
+            MockRepository m = new MockRepository();
+
+            IOAuthHelpers helpers = m.DynamicMock<IOAuthHelpers>();
+            IOAuthRequest request = m.DynamicMock<IOAuthRequest>();
+
+            OAuthClient client = new OAuthClient(USER_AUTH_URL, REQUEST_TOKEN_URL, ACCESS_TOKEN_URL, CONSUMER_SECRET, CONSUMER_KEY);
+            client.SetHelperImplementation(helpers);
+            client.SetRequestImplementation(request);
+
+            string tokenSecret = "tokenSecret";
+            string authToken = "authToken";
+
+            string methodUrl = "methodUrl";
+            string response = "{key: 'value'}";
+
+            using (m.Record())
+            {
+                helpers.Expect(h => h.BuildTimestamp()).Return(timeStamp);
+                helpers.Expect(h => h.BuildNonce()).Return(nonce);
+
+                request.Expect(r => r.BuildAndExecuteRequest(ACCESS_TOKEN_URL, CONSUMER_SECRET, null)).IgnoreArguments().Return(response);
+
+            }
+            using (m.Playback())
+            {
+                dynamic result = client.JsonMethod(methodUrl, authToken, tokenSecret, new MockJavaScriptConverter());
+
+                Assert.AreEqual("value", result["key"]);
+            }
+        }
+
+        [Test]
+        public void BuildTimestamp()
+        {
+            Helpers h = new Helpers();
+
+            DateTime now = DateTime.Now.ToUniversalTime();
+
+            string timestamp = h.BuildTimestamp();
+
+            int ts = int.Parse(timestamp);
+
+            TimeSpan span = TimeSpan.FromSeconds(ts);
+
+            DateTime result = now.Subtract(span);
+
+            Assert.AreEqual(1970, result.Year);
+            Assert.AreEqual(1, result.Month);
+            Assert.AreEqual(1, result.Day);
+        }
+        [Test]
+        public void GetBytes()
+        {
+            string testString = "this is a test string";
+
+            byte[] resultBytes = new Helpers().GetBytes(testString);
+            byte[] testBytes = Encoding.ASCII.GetBytes(testString);
+
+            Assert.AreEqual(testBytes, resultBytes);
         }
     }
 }

@@ -150,7 +150,7 @@ namespace SimpleOAuth.OAuth
                 }
                 catch (Exception exc)
                 {
-                    // failed to parse json string
+                    throw new InvalidJsonInputException();
                 }
             }
 
