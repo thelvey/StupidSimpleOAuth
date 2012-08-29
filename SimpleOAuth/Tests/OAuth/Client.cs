@@ -27,13 +27,13 @@ namespace SimpleOAuth.Tests.OAuth
         public void GenerateUnauthorizedRequestWithoutArguments()
         {
             MockRepository mr = new MockRepository();
-            OAuthClient oa = new OAuthClient(String.Empty, String.Empty, String.Empty);
+            OAuthClient oa = new OAuthClient();
 
             using (mr.Record())
             {
                 Assert.Throws(typeof(ArgumentNullException), delegate
                 {
-                    oa.GenerateUnauthorizedRequestToken();
+                    oa.GenerateUnauthorizedRequestToken(REQUEST_TOKEN_URL, USER_AUTH_URL);
                 });
             }
         }
@@ -148,10 +148,11 @@ namespace SimpleOAuth.Tests.OAuth
             IOAuthHelpers _helpers = m.DynamicMock<IOAuthHelpers>();
             IOAuthRequest _request = m.DynamicMock<IOAuthRequest>();
 
-            OAuthClient client = new OAuthClient(USER_AUTH_URL, REQUEST_TOKEN_URL, ACCESS_TOKEN_URL, CONSUMER_SECRET, CONSUMER_KEY);
+            OAuthClient client = new OAuthClient();
             client.SetHelperImplementation(_helpers);
             client.SetRequestImplementation(_request);
-
+            client.ConsumerKey = CONSUMER_KEY;
+            client.ConsumerSecret = CONSUMER_SECRET;
 
             string tokenSecret = "tokenSecret";
             string responseToken = "responseToken";
@@ -172,7 +173,7 @@ namespace SimpleOAuth.Tests.OAuth
             }
             using (m.Playback())
             {
-                AccessToken result = client.ExchangeForAccessToken("authToken", tokenSecret, "verifier");
+                AccessToken result = client.ExchangeForAccessToken(ACCESS_TOKEN_URL, "authToken", tokenSecret, "verifier");
 
                 Assert.AreEqual(responseToken, result.OAuthToken);
                 Assert.AreEqual(responseTokenSecret, result.OAuthTokenSecret);
@@ -186,9 +187,11 @@ namespace SimpleOAuth.Tests.OAuth
             IOAuthHelpers helpers = m.DynamicMock<IOAuthHelpers>();
             IOAuthRequest request = m.DynamicMock<IOAuthRequest>();
 
-            OAuthClient client = new OAuthClient(USER_AUTH_URL, REQUEST_TOKEN_URL, ACCESS_TOKEN_URL, CONSUMER_SECRET, CONSUMER_KEY);
+            OAuthClient client = new OAuthClient();
             client.SetHelperImplementation(helpers);
             client.SetRequestImplementation(request);
+            client.ConsumerSecret = CONSUMER_SECRET;
+            client.ConsumerKey = CONSUMER_KEY;
 
             string tokenSecret = "tokenSecret";
             string responseToken = "responseToken";
@@ -209,7 +212,7 @@ namespace SimpleOAuth.Tests.OAuth
             }
             using (m.Playback())
             {
-                AuthRequestResult result = client.GenerateUnauthorizedRequestToken();
+                AuthRequestResult result = client.GenerateUnauthorizedRequestToken(REQUEST_TOKEN_URL, USER_AUTH_URL);
 
                 Assert.AreEqual(USER_AUTH_URL + "?oauth_token=" + responseToken + "&permission=read", result.AuthUrl);
                 Assert.AreEqual(responseTokenSecret, result.OAuthTokenSecret);
@@ -223,7 +226,7 @@ namespace SimpleOAuth.Tests.OAuth
             IOAuthHelpers helpers = m.DynamicMock<IOAuthHelpers>();
             IOAuthRequest request = m.DynamicMock<IOAuthRequest>();
 
-            OAuthClient client = new OAuthClient(USER_AUTH_URL, REQUEST_TOKEN_URL, ACCESS_TOKEN_URL, CONSUMER_SECRET, CONSUMER_KEY);
+            OAuthClient client = new OAuthClient();
             client.SetHelperImplementation(helpers);
             client.SetRequestImplementation(request);
 
@@ -256,7 +259,7 @@ namespace SimpleOAuth.Tests.OAuth
             IOAuthHelpers helpers = m.DynamicMock<IOAuthHelpers>();
             IOAuthRequest request = m.DynamicMock<IOAuthRequest>();
 
-            OAuthClient client = new OAuthClient(USER_AUTH_URL, REQUEST_TOKEN_URL, ACCESS_TOKEN_URL, CONSUMER_SECRET, CONSUMER_KEY);
+            OAuthClient client = new OAuthClient();
             client.SetHelperImplementation(helpers);
             client.SetRequestImplementation(request);
 

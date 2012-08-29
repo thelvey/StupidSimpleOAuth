@@ -13,18 +13,18 @@ namespace SimpleOAuth.Implementations
         private const string _accessTokenUrl = "https://api.twitter.com/oauth/access_token";
         private const string _methodUrl = "https://api.twitter.com/1";
 
-        private static OAuthClient _oAuthClient = new OAuthClient(_userAuthUrl, _requestTokenUrl, _accessTokenUrl);
+        private static OAuthClient _oAuthClient = new OAuthClient();
 
         public static AuthRequestResult GenerateUnauthorizedRequestToken(string consumerKey, string consumerSecret)
         {
             _oAuthClient.ConsumerKey = consumerKey;
             _oAuthClient.ConsumerSecret = consumerSecret;
 
-            return _oAuthClient.GenerateUnauthorizedRequestToken();
+            return _oAuthClient.GenerateUnauthorizedRequestToken(_requestTokenUrl, _userAuthUrl);
         }
         public static AccessToken ExchangeForAccessToken(string authToken, string tokenSecret, string verifier)
         {
-            return _oAuthClient.ExchangeForAccessToken(authToken, tokenSecret, verifier);
+            return _oAuthClient.ExchangeForAccessToken(_accessTokenUrl, authToken, tokenSecret, verifier);
         }
         public static dynamic GetTweets(string authToken, string tokenSecret)
         {
