@@ -19,19 +19,21 @@ namespace SimpleOAuth.OAuth
         public string AuthUrl { get; set; }
         public string OAuthTokenSecret { get; set; }
     }
-    public class OAuthConfig
+    public class OAuthProviderConfig
     {
         public string UserAuthUrl { get; set; }
         public string RequestTokenUrl { get; set; }
         public string AccessTokenUrl { get; set; }
     }
+    public class OAuthConsumerConfig
+    {
+        public string ConsumerSecret { get; set; }
+        public string ConsumerKey { get; set; }
+    }
     public class OAuthClient
     {
         private const string OAUTH_VERSION = "1.0";
         private const string SIGNATURE_METHOD = "HMAC-SHA1";
-        
-        public string ConsumerSecret { get; set; }
-        public string ConsumerKey { get; set; }
 
         private static IOAuthHelpers _helpers = new Helpers();
         internal void SetHelperImplementation(IOAuthHelpers helpers)
@@ -45,9 +47,9 @@ namespace SimpleOAuth.OAuth
             _requestImplementation = request;
         }
 
-        public AccessToken ExchangeForAccessToken(string accessTokenUrl, string authToken, string tokenSecret, string verifier)
+        public AccessToken ExchangeForAccessToken(OAuthConsumerConfig config, string accessTokenUrl, string authToken, string tokenSecret, string verifier)
         {
-            ValidateArguments();
+            ValidateArguments(config);
 
             AccessToken result = new AccessToken();
 
@@ -56,7 +58,7 @@ namespace SimpleOAuth.OAuth
 
             List<KeyValuePair<string, string>> requestParams = new List<KeyValuePair<string, string>>();
 
-            requestParams.Add(new KeyValuePair<string, string>("oauth_consumer_key", ConsumerKey));
+            requestParams.Add(new KeyValuePair<string, string>("oauth_consumer_key", config.ConsumerKey));
             requestParams.Add(new KeyValuePair<string, string>("oauth_nonce", nonce));
             requestParams.Add(new KeyValuePair<string, string>("oauth_signature_method", SIGNATURE_METHOD));
             requestParams.Add(new KeyValuePair<string, string>("oauth_timestamp", timeStamp));
@@ -64,7 +66,7 @@ namespace SimpleOAuth.OAuth
             requestParams.Add(new KeyValuePair<string, string>("oauth_verifier", verifier));
             requestParams.Add(new KeyValuePair<string, string>("oauth_version", OAUTH_VERSION));
 
-            string response = _requestImplementation.BuildAndExecuteRequest(accessTokenUrl, ConsumerSecret + "&" + tokenSecret, requestParams);
+            string response = _requestImplementation.BuildAndExecuteRequest(accessTokenUrl, config.ConsumerSecret + "&" + tokenSecret, requestParams);
 
             Dictionary<string, string> args = _helpers.SplitResponseParams(response);
 
@@ -75,9 +77,9 @@ namespace SimpleOAuth.OAuth
         }
 
 
-        public AuthRequestResult GenerateUnauthorizedRequestToken(string requestTokenUrl, string userAuthUrl)
+        public AuthRequestResult GenerateUnauthorizedRequestToken(OAuthConsumerConfig config, string requestTokenUrl, string userAuthUrl)
         {
-            ValidateArguments();
+            ValidateArguments(config);
 
             AuthRequestResult result = new AuthRequestResult();
 
@@ -85,14 +87,14 @@ namespace SimpleOAuth.OAuth
             string nonce = _helpers.BuildNonce();
 
             List<KeyValuePair<string, string>> requestParams = new List<KeyValuePair<string, string>>();
-            requestParams.Add(new KeyValuePair<string, string>("oauth_consumer_key", ConsumerKey));
+            requestParams.Add(new KeyValuePair<string, string>("oauth_consumer_key", config.ConsumerKey));
             requestParams.Add(new KeyValuePair<string, string>("oauth_nonce", nonce));
             requestParams.Add(new KeyValuePair<string, string>("oauth_signature_method", SIGNATURE_METHOD));
             requestParams.Add(new KeyValuePair<string, string>("oauth_timestamp", timeStamp));
             requestParams.Add(new KeyValuePair<string, string>("oauth_version", OAUTH_VERSION));
 
             // at this point call the new method
-            string response = _requestImplementation.BuildAndExecuteRequest(requestTokenUrl, ConsumerSecret + "&", requestParams);
+            string response = _requestImplementation.BuildAndExecuteRequest(requestTokenUrl, config.ConsumerSecret + "&", requestParams);
             Dictionary<string, string> args = _helpers.SplitResponseParams(response);
 
             if (args.ContainsKey("oauth_token"))
@@ -105,11 +107,11 @@ namespace SimpleOAuth.OAuth
 
             return result;
         }
-        public dynamic JsonMethod(string url, string authToken, string tokenSecret, List<KeyValuePair<string, string>> requestParams = null)
+        public dynamic JsonMethod(OAuthConsumerConfig config, string url, string authToken, string tokenSecret, List<KeyValuePair<string, string>> requestParams = null)
         {
-            return JsonMethod(url, authToken, tokenSecret, new Json.DynamicJsonObject.DynamicJsonConverter(), requestParams);
+            return JsonMethod(config, url, authToken, tokenSecret, new Json.DynamicJsonObject.DynamicJsonConverter(), requestParams);
         }
-        internal dynamic JsonMethod(string url, string authToken, string tokenSecret, JavaScriptConverter jsConverter, List<KeyValuePair<string, string>> requestParams = null)
+        internal dynamic JsonMethod(OAuthConsumerConfig config, string url, string authToken, string tokenSecret, JavaScriptConverter jsConverter, List<KeyValuePair<string, string>> requestParams = null)
         {
             dynamic result = null;
 
@@ -123,14 +125,14 @@ namespace SimpleOAuth.OAuth
                 string timeStamp = _helpers.BuildTimestamp();
                 string nonce = _helpers.BuildNonce();
 
-                requestParams.Add(new KeyValuePair<string, string>("oauth_consumer_key", ConsumerKey));
+                requestParams.Add(new KeyValuePair<string, string>("oauth_consumer_key", config.ConsumerKey));
                 requestParams.Add(new KeyValuePair<string, string>("oauth_nonce", nonce));
                 requestParams.Add(new KeyValuePair<string, string>("oauth_signature_method", SIGNATURE_METHOD));
                 requestParams.Add(new KeyValuePair<string, string>("oauth_timestamp", timeStamp));
                 requestParams.Add(new KeyValuePair<string, string>("oauth_token", authToken));
                 requestParams.Add(new KeyValuePair<string, string>("oauth_version", OAUTH_VERSION));
             }
-            string response = _requestImplementation.BuildAndExecuteRequest(url, ConsumerSecret + "&" + tokenSecret, requestParams, useAuthorized);
+            string response = _requestImplementation.BuildAndExecuteRequest(url, config.ConsumerSecret + "&" + tokenSecret, requestParams, useAuthorized);
 
             if (!String.IsNullOrEmpty(response))
             {
@@ -150,10 +152,10 @@ namespace SimpleOAuth.OAuth
             return result;
         }
 
-        internal void ValidateArguments()
+        internal void ValidateArguments(OAuthConsumerConfig config)
         {
-            if(String.IsNullOrEmpty(ConsumerKey)) throw new ArgumentNullException();
-            if(String.IsNullOrEmpty(ConsumerSecret)) throw new ArgumentNullException();
+            if(String.IsNullOrEmpty(config.ConsumerKey)) throw new ArgumentNullException();
+            if(String.IsNullOrEmpty(config.ConsumerSecret)) throw new ArgumentNullException();
         }
     }
 }

@@ -17,18 +17,19 @@ namespace SimpleOAuth.Implementations
 
         public static AuthRequestResult GenerateUnauthorizedRequestToken(string consumerKey, string consumerSecret)
         {
-            _oAuthClient.ConsumerKey = consumerKey;
-            _oAuthClient.ConsumerSecret = consumerSecret;
+            OAuthConsumerConfig config = new OAuthConsumerConfig();
+            config.ConsumerKey = consumerKey;
+            config.ConsumerSecret = consumerSecret;
 
-            return _oAuthClient.GenerateUnauthorizedRequestToken(_requestTokenUrl, _userAuthUrl);
+            return _oAuthClient.GenerateUnauthorizedRequestToken(config, _requestTokenUrl, _userAuthUrl);
         }
-        public static AccessToken ExchangeForAccessToken(string authToken, string tokenSecret, string verifier)
+        public static AccessToken ExchangeForAccessToken(OAuthConsumerConfig config, string authToken, string tokenSecret, string verifier)
         {
-            return _oAuthClient.ExchangeForAccessToken(_accessTokenUrl, authToken, tokenSecret, verifier);
+            return _oAuthClient.ExchangeForAccessToken(config, _accessTokenUrl, authToken, tokenSecret, verifier);
         }
-        public static dynamic GetTweets(string authToken, string tokenSecret)
+        public static dynamic GetTweets(OAuthConsumerConfig config, string authToken, string tokenSecret)
         {
-            return _oAuthClient.JsonMethod(_methodUrl + "/statuses/user_timeline.json", authToken, tokenSecret);
+            return _oAuthClient.JsonMethod(config, _methodUrl + "/statuses/user_timeline.json", authToken, tokenSecret);
         }
     }
 }

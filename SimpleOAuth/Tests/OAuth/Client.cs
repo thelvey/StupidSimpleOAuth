@@ -29,11 +29,13 @@ namespace SimpleOAuth.Tests.OAuth
             MockRepository mr = new MockRepository();
             OAuthClient oa = new OAuthClient();
 
+            OAuthConsumerConfig config = new OAuthConsumerConfig();
+
             using (mr.Record())
             {
                 Assert.Throws(typeof(ArgumentNullException), delegate
                 {
-                    oa.GenerateUnauthorizedRequestToken(REQUEST_TOKEN_URL, USER_AUTH_URL);
+                    oa.GenerateUnauthorizedRequestToken(config, REQUEST_TOKEN_URL, USER_AUTH_URL);
                 });
             }
         }
@@ -151,8 +153,10 @@ namespace SimpleOAuth.Tests.OAuth
             OAuthClient client = new OAuthClient();
             client.SetHelperImplementation(_helpers);
             client.SetRequestImplementation(_request);
-            client.ConsumerKey = CONSUMER_KEY;
-            client.ConsumerSecret = CONSUMER_SECRET;
+
+            OAuthConsumerConfig config = new OAuthConsumerConfig();
+            config.ConsumerSecret = CONSUMER_SECRET;
+            config.ConsumerKey = CONSUMER_KEY;
 
             string tokenSecret = "tokenSecret";
             string responseToken = "responseToken";
@@ -173,7 +177,7 @@ namespace SimpleOAuth.Tests.OAuth
             }
             using (m.Playback())
             {
-                AccessToken result = client.ExchangeForAccessToken(ACCESS_TOKEN_URL, "authToken", tokenSecret, "verifier");
+                AccessToken result = client.ExchangeForAccessToken(config, ACCESS_TOKEN_URL, "authToken", tokenSecret, "verifier");
 
                 Assert.AreEqual(responseToken, result.OAuthToken);
                 Assert.AreEqual(responseTokenSecret, result.OAuthTokenSecret);
@@ -190,8 +194,10 @@ namespace SimpleOAuth.Tests.OAuth
             OAuthClient client = new OAuthClient();
             client.SetHelperImplementation(helpers);
             client.SetRequestImplementation(request);
-            client.ConsumerSecret = CONSUMER_SECRET;
-            client.ConsumerKey = CONSUMER_KEY;
+
+            OAuthConsumerConfig config = new OAuthConsumerConfig();
+            config.ConsumerKey = CONSUMER_KEY;
+            config.ConsumerSecret = CONSUMER_SECRET;
 
             string tokenSecret = "tokenSecret";
             string responseToken = "responseToken";
@@ -212,7 +218,7 @@ namespace SimpleOAuth.Tests.OAuth
             }
             using (m.Playback())
             {
-                AuthRequestResult result = client.GenerateUnauthorizedRequestToken(REQUEST_TOKEN_URL, USER_AUTH_URL);
+                AuthRequestResult result = client.GenerateUnauthorizedRequestToken(config, REQUEST_TOKEN_URL, USER_AUTH_URL);
 
                 Assert.AreEqual(USER_AUTH_URL + "?oauth_token=" + responseToken + "&permission=read", result.AuthUrl);
                 Assert.AreEqual(responseTokenSecret, result.OAuthTokenSecret);
@@ -229,6 +235,10 @@ namespace SimpleOAuth.Tests.OAuth
             OAuthClient client = new OAuthClient();
             client.SetHelperImplementation(helpers);
             client.SetRequestImplementation(request);
+
+            OAuthConsumerConfig config = new OAuthConsumerConfig();
+            config.ConsumerKey = CONSUMER_KEY;
+            config.ConsumerSecret = CONSUMER_SECRET;
 
             string tokenSecret = "tokenSecret";
             string authToken = "authToken";
@@ -247,7 +257,7 @@ namespace SimpleOAuth.Tests.OAuth
             {
                 Assert.Throws(typeof(InvalidJsonInputException), delegate
                 {
-                    client.JsonMethod(methodUrl, authToken, tokenSecret, new MockJavaScriptConverter());
+                    client.JsonMethod(config, methodUrl, authToken, tokenSecret, new MockJavaScriptConverter());
                 });
             }
         }
@@ -262,6 +272,10 @@ namespace SimpleOAuth.Tests.OAuth
             OAuthClient client = new OAuthClient();
             client.SetHelperImplementation(helpers);
             client.SetRequestImplementation(request);
+
+            OAuthConsumerConfig config = new OAuthConsumerConfig();
+            config.ConsumerKey = CONSUMER_KEY;
+            config.ConsumerSecret = CONSUMER_SECRET;
 
             string tokenSecret = "tokenSecret";
             string authToken = "authToken";
@@ -279,7 +293,7 @@ namespace SimpleOAuth.Tests.OAuth
             }
             using (m.Playback())
             {
-                dynamic result = client.JsonMethod(methodUrl, authToken, tokenSecret, new MockJavaScriptConverter());
+                dynamic result = client.JsonMethod(config, methodUrl, authToken, tokenSecret, new MockJavaScriptConverter());
 
                 Assert.AreEqual("value", result["key"]);
             }
