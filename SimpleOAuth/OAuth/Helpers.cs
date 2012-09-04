@@ -17,7 +17,7 @@ namespace SimpleOAuth.OAuth
         byte[] GetBytes(string input);
         Dictionary<string, string> SplitResponseParams(string response);
     }
-    public interface IOAuthRequest
+    public interface IOAuthRequestImplementation
     {
         string BuildAndExecuteRequest(string url, string consumerSecret, List<KeyValuePair<string, string>> requestParams, bool useAuthorized = true);
     }
@@ -32,7 +32,7 @@ namespace SimpleOAuth.OAuth
             return (HttpWebRequest)WebRequest.Create(url);
         }
     }
-    internal class OAuthRequest : IOAuthRequest
+    internal class DefaultOAuthRequestImplementation : IOAuthRequestImplementation
     {
         private IOAuthHelpers _helpers = new Helpers();
         internal void SetHelperImplementation(IOAuthHelpers helper)

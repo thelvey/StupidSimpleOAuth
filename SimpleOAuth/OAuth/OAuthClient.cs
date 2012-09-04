@@ -30,24 +30,24 @@ namespace SimpleOAuth.OAuth
         public string ConsumerSecret { get; set; }
         public string ConsumerKey { get; set; }
     }
-    public class OAuthClient
+    public static class OAuthClient
     {
         private const string OAUTH_VERSION = "1.0";
         private const string SIGNATURE_METHOD = "HMAC-SHA1";
 
         private static IOAuthHelpers _helpers = new Helpers();
-        internal void SetHelperImplementation(IOAuthHelpers helpers)
+        internal static void SetHelperImplementation(IOAuthHelpers helpers)
         {
             _helpers = helpers;
         }
 
-        private static IOAuthRequest _requestImplementation = new OAuthRequest();
-        internal void SetRequestImplementation(IOAuthRequest request)
+        private static IOAuthRequestImplementation _requestImplementation = new DefaultOAuthRequestImplementation();
+        internal static void SetRequestImplementation(IOAuthRequestImplementation request)
         {
             _requestImplementation = request;
         }
 
-        public AccessToken ExchangeForAccessToken(OAuthConsumerConfig config, string accessTokenUrl, string authToken, string tokenSecret, string verifier)
+        public static AccessToken ExchangeForAccessToken(OAuthConsumerConfig config, string accessTokenUrl, string authToken, string tokenSecret, string verifier)
         {
             ValidateArguments(config);
 
@@ -77,7 +77,7 @@ namespace SimpleOAuth.OAuth
         }
 
 
-        public AuthRequestResult GenerateUnauthorizedRequestToken(OAuthConsumerConfig config, string requestTokenUrl, string userAuthUrl)
+        public static AuthRequestResult GenerateUnauthorizedRequestToken(OAuthConsumerConfig config, string requestTokenUrl, string userAuthUrl)
         {
             ValidateArguments(config);
 
@@ -107,11 +107,11 @@ namespace SimpleOAuth.OAuth
 
             return result;
         }
-        public dynamic JsonMethod(OAuthConsumerConfig config, string url, string authToken, string tokenSecret, List<KeyValuePair<string, string>> requestParams = null)
+        public static dynamic JsonMethod(OAuthConsumerConfig config, string url, string authToken, string tokenSecret, List<KeyValuePair<string, string>> requestParams = null)
         {
             return JsonMethod(config, url, authToken, tokenSecret, new Json.DynamicJsonObject.DynamicJsonConverter(), requestParams);
         }
-        internal dynamic JsonMethod(OAuthConsumerConfig config, string url, string authToken, string tokenSecret, JavaScriptConverter jsConverter, List<KeyValuePair<string, string>> requestParams = null)
+        internal static dynamic JsonMethod(OAuthConsumerConfig config, string url, string authToken, string tokenSecret, JavaScriptConverter jsConverter, List<KeyValuePair<string, string>> requestParams = null)
         {
             dynamic result = null;
 
@@ -152,7 +152,7 @@ namespace SimpleOAuth.OAuth
             return result;
         }
 
-        internal void ValidateArguments(OAuthConsumerConfig config)
+        internal static void ValidateArguments(OAuthConsumerConfig config)
         {
             if(String.IsNullOrEmpty(config.ConsumerKey)) throw new ArgumentNullException();
             if(String.IsNullOrEmpty(config.ConsumerSecret)) throw new ArgumentNullException();
