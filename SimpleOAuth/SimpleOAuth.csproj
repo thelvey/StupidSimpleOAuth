@@ -49,7 +49,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exceptions.cs" />
-    <Compile Include="Implementations\Twitter.cs" />
     <Compile Include="Json\DynamicJsonObject.cs" />
     <Compile Include="OAuth\Helpers.cs" />
     <Compile Include="OAuth\OAuthClient.cs" />
