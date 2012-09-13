@@ -76,8 +76,7 @@ namespace SimpleOAuth.OAuth
             return result;
         }
 
-
-        public static AuthRequestResult GenerateUnauthorizedRequestToken(OAuthConsumerConfig config, string requestTokenUrl, string userAuthUrl)
+        public static AuthRequestResult GenerateUnauthorizedRequestToken(OAuthConsumerConfig config, string requestTokenUrl, string userAuthUrl, List<KeyValuePair<string, string>> authArgs = null)
         {
             ValidateArguments(config);
 
@@ -86,22 +85,21 @@ namespace SimpleOAuth.OAuth
             string timeStamp = _helpers.BuildTimestamp();
             string nonce = _helpers.BuildNonce();
 
-            List<KeyValuePair<string, string>> requestParams = new List<KeyValuePair<string, string>>();
+            List<KeyValuePair<string, string>> requestParams = authArgs ?? new List<KeyValuePair<string, string>>();
             requestParams.Add(new KeyValuePair<string, string>("oauth_consumer_key", config.ConsumerKey));
             requestParams.Add(new KeyValuePair<string, string>("oauth_nonce", nonce));
             requestParams.Add(new KeyValuePair<string, string>("oauth_signature_method", SIGNATURE_METHOD));
             requestParams.Add(new KeyValuePair<string, string>("oauth_timestamp", timeStamp));
             requestParams.Add(new KeyValuePair<string, string>("oauth_version", OAUTH_VERSION));
 
-            // at this point call the new method
             string response = _requestImplementation.BuildAndExecuteRequest(requestTokenUrl, config.ConsumerSecret + "&", requestParams);
             Dictionary<string, string> args = _helpers.SplitResponseParams(response);
 
             if (args.ContainsKey("oauth_token"))
             {
-                //http://vimeo.com/oauth/authorize
-                //todo: this needs changed to be made not specific to twitter
-                result.AuthUrl = userAuthUrl + "?oauth_token=" + args["oauth_token"] + "&permission=read";
+                // the &permission is an artifact of twitter's auth
+                // it isn't break other auths so i'm going to leave it here for now
+                result.AuthUrl = userAuthUrl + "?oauth_token=" + args["oauth_token"];
                 result.OAuthTokenSecret = args["oauth_token_secret"];
             }
 

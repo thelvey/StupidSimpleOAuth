@@ -8,18 +8,126 @@ using SimpleOAuth.OAuth;
 
 public partial class Twitter_Default : System.Web.UI.Page
 {
-    protected enum OAuthProviders { Twitter, Yelp };
-
-    protected class TwitterConfig
+    protected enum OAuthProviders { Twitter, LinkedIn };
+    protected enum RequestLevelModes { AtRequestToken, AtUserAuthPage };
+    protected interface IProviderConfig
     {
-        public const string RequestTokenUrl = "https://api.twitter.com/oauth/request_token";
-        public const string UserAuthUrl = "https://api.twitter.com/oauth/authorize";
-        public const string AccessTokenUrl = "https://api.twitter.com/oauth/access_token";
-        public const string MethodUrl = "https://api.twitter.com/1";
-
-        public const string TimelineUrl = MethodUrl + "/statuses/user_timeline.json";
+        string RequestTokenUrl { get; }
+        string UserAuthUrl { get; }
+        string AccessTokenUrl { get; }
+        string MethodUrl { get; }
+        string DemoMethodUrl { get; }
+        string RequestLevel { get; }
+        List<KeyValuePair<string, string>> DemoMethodArguments { get; }
+        RequestLevelModes RequestLevelMode { get; }
     }
+    protected class LinkedInConfig : IProviderConfig
+    {
+        private string baseUrl = "https://api.linkedin.com";
+        
+        public string RequestTokenUrl
+        {
+            get { return baseUrl + "/uas/oauth/requestToken"; }
+        }
 
+        public string UserAuthUrl
+        {
+            get { return baseUrl + "/uas/oauth/authenticate"; }
+        }
+
+        public string AccessTokenUrl
+        {
+            get { return baseUrl + "/uas/oauth/accessToken"; }
+        }
+
+        public string MethodUrl
+        {
+            get { return baseUrl + "/v1"; }
+        }
+
+        public string DemoMethodUrl
+        {
+            get { return "http://api.linkedin.com/v1/people/~/connections"; }
+        }
+
+        public string RequestLevel
+        {
+            get { return "scope=r_network"; }
+        }
+        public RequestLevelModes RequestLevelMode
+        {
+            get { return RequestLevelModes.AtRequestToken; }
+        }
+        public List<KeyValuePair<string, string>> DemoMethodArguments
+        {
+            get
+            {
+                List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
+
+                result.Add(new KeyValuePair<string, string>("format", "json"));
+
+                return result;
+            }
+        }
+    }
+    protected class TwitterConfig : IProviderConfig
+    {
+        public string  RequestTokenUrl
+        {
+            get { return "https://api.twitter.com/oauth/request_token"; }
+        }
+
+        public string UserAuthUrl
+        {
+            get { return "https://api.twitter.com/oauth/authorize"; }
+        }
+
+        public string AccessTokenUrl
+        {
+            get { return "https://api.twitter.com/oauth/access_token"; }
+        }
+
+        public string MethodUrl
+        {
+            get { return "https://api.twitter.com/1"; }
+        }
+
+        public string DemoMethodUrl
+        {
+            get { return MethodUrl + "/statuses/user_timeline.json"; }
+        }
+        public string RequestLevel
+        {
+            get { return "permission=read"; }
+        }
+        public RequestLevelModes RequestLevelMode
+        {
+            get { return RequestLevelModes.AtUserAuthPage; }
+        }
+        public List<KeyValuePair<string, string>> DemoMethodArguments
+        {
+            get { return null; }
+        }
+    }
+    protected IProviderConfig PageProviderConfig
+    {
+        get
+        {
+            IProviderConfig result = null;
+            
+            switch (PageProvider)
+            {
+                case OAuthProviders.LinkedIn:
+                    result = new LinkedInConfig();
+                    break;
+                case OAuthProviders.Twitter:
+                    result = new TwitterConfig();
+                    break;
+            }
+
+            return result;
+        }
+    }
     protected OAuthProviders PageProvider
     {
         get
@@ -28,9 +136,9 @@ public partial class Twitter_Default : System.Web.UI.Page
 
             if (!String.IsNullOrEmpty(Request["provider"]))
             {
-                if (Request["provider"] == "yelp")
+                if (Request["provider"] == "linkedin")
                 {
-                    result = OAuthProviders.Yelp;
+                    result = OAuthProviders.LinkedIn;
                 }
             }
 
@@ -59,14 +167,23 @@ public partial class Twitter_Default : System.Web.UI.Page
         config.ConsumerKey = txtConsumerKey.Text;
         config.ConsumerSecret = txtConsumerSecret.Text;
 
+        List<KeyValuePair<string, string>> authArgs = null;
 
-        AuthRequestResult authRequest = OAuthClient.GenerateUnauthorizedRequestToken(config, TwitterConfig.RequestTokenUrl, TwitterConfig.UserAuthUrl);
+        if (PageProviderConfig.RequestLevelMode == RequestLevelModes.AtRequestToken)
+        {
+            string[] args = PageProviderConfig.RequestLevel.Split('=');
+
+            authArgs = new List<KeyValuePair<string, string>>();
+            authArgs.Add(new KeyValuePair<string, string>(args[0], args[1]));
+        }
+
+        AuthRequestResult authRequest = OAuthClient.GenerateUnauthorizedRequestToken(config, PageProviderConfig.RequestTokenUrl, PageProviderConfig.UserAuthUrl, authArgs);
 
         SetSessionValue("OAuthTokenSecret", authRequest.OAuthTokenSecret);
         SetSessionValue("ConsumerKey", txtConsumerKey.Text);
         SetSessionValue("ConsumerSecret", txtConsumerSecret.Text);
 
-        lnkAuth.NavigateUrl = authRequest.AuthUrl;
+        lnkAuth.NavigateUrl = authRequest.AuthUrl + (PageProviderConfig.RequestLevelMode == RequestLevelModes.AtUserAuthPage ? "&" + PageProviderConfig.RequestLevel : String.Empty);
         ltlTokenSecret.Text = authRequest.OAuthTokenSecret;
         pnlAuthLink.Visible = true;
     }
@@ -76,7 +193,7 @@ public partial class Twitter_Default : System.Web.UI.Page
         config.ConsumerKey = txtConsumerKey.Text;
         config.ConsumerSecret = txtConsumerSecret.Text;
 
-        AccessToken accessToken = OAuthClient.ExchangeForAccessToken(config, TwitterConfig.AccessTokenUrl, ltlOAuthToken.Text, ltlTokenSecretCallback.Text, ltlOAuthVerifier.Text);
+        AccessToken accessToken = OAuthClient.ExchangeForAccessToken(config, PageProviderConfig.AccessTokenUrl, ltlOAuthToken.Text, ltlTokenSecretCallback.Text, ltlOAuthVerifier.Text);
 
         pnlAccessToken.Visible = true;
         ltlAccessToken.Text = accessToken.OAuthToken;
@@ -88,7 +205,7 @@ public partial class Twitter_Default : System.Web.UI.Page
         config.ConsumerKey = txtConsumerKey.Text;
         config.ConsumerSecret = txtConsumerSecret.Text;
 
-        dynamic tweets = OAuthClient.JsonMethod(config, TwitterConfig.TimelineUrl, ltlAccessToken.Text, ltlAccessTokenSecret.Text);
+        dynamic tweets = OAuthClient.JsonMethod(config, PageProviderConfig.DemoMethodUrl, ltlAccessToken.Text, ltlAccessTokenSecret.Text, PageProviderConfig.DemoMethodArguments);
 
         grdTweets.DataSource = tweets as object[];
         grdTweets.DataBind();
