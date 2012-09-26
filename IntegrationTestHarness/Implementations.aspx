@@ -1,5 +1,5 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.master" AutoEventWireup="true"
-    CodeFile="Default.aspx.cs" Inherits="Twitter_Default" %>
+    CodeFile="Implementations.aspx.cs" Inherits="Implementations" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
 </asp:Content>
@@ -47,7 +47,7 @@
         Access Token Secret:
         <asp:Literal ID="ltlAccessTokenSecret" runat="server" />
         <br />
-        <asp:Button ID="btnGetTweets" runat="server" Text="Get Tweets for authorized user"
+        <asp:Button ID="btnGetTweets" runat="server" Text="Get data for authorized user"
             OnClick="btnGetTweets_Click" />
         <br />
         <br />

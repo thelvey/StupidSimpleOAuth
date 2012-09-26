@@ -6,12 +6,22 @@ using System.Web;
 /// <summary>
 /// Summary description for ProviderConfigFactory
 /// </summary>
-public class ProviderConfigFactory
+public static class ProviderConfigFactory
 {
-	public ProviderConfigFactory()
+	public static IProviderConfig GetImplementation(OAuthProviders provider)
 	{
-		//
-		// TODO: Add constructor logic here
-		//
+        IProviderConfig result = null;
+
+        switch (provider)
+        {
+            case OAuthProviders.LinkedIn:
+                result = new LinkedInConfig();
+                break;
+            case OAuthProviders.Twitter:
+                result = new TwitterConfig();
+                break;
+        }
+
+        return result;
 	}
 }

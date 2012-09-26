@@ -6,7 +6,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using SimpleOAuth.OAuth;
 
-public partial class Twitter_Default : System.Web.UI.Page
+public partial class Implementations : System.Web.UI.Page
 {
     protected IProviderConfig PageProviderConfig
     {

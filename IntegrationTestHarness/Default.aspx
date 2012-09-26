@@ -5,8 +5,8 @@
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
 Implementations:
 <ul>
-    <li><a href="/Twitter/Default.aspx">Twitter</a></li>
-    <li><a href="/Yelp/Default.aspx">Yelp</a></li>
+    <li><a href="/Implementations.aspx">Twitter</a></li>
+    <li><a href="/Implementations.aspx?provider=linkedin">LinkedIN</a></li>
 </ul>
 </asp:Content>
 
