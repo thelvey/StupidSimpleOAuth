@@ -1,7 +1,45 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleOAuth", "SimpleOAuth\SimpleOAuth.csproj", "{3917A43D-3E20-4072-9D3F-368FAECAED2F}"
+EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "IntegrationTestHarness", "IntegrationTestHarness\", "{6B2A42CF-052C-46C6-B2F1-3708F676E97E}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		ProjectReferences = "{3917A43D-3E20-4072-9D3F-368FAECAED2F}|SimpleOAuth.dll;"
+		Debug.AspNetCompiler.VirtualPath = "/IntegrationTestHarness"
+		Debug.AspNetCompiler.PhysicalPath = "IntegrationTestHarness\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\IntegrationTestHarness\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/IntegrationTestHarness"
+		Release.AspNetCompiler.PhysicalPath = "IntegrationTestHarness\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\IntegrationTestHarness\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "18788"
+		DefaultWebSiteLanguage = "Visual C#"
+	EndProjectSection
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3917A43D-3E20-4072-9D3F-368FAECAED2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3917A43D-3E20-4072-9D3F-368FAECAED2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3917A43D-3E20-4072-9D3F-368FAECAED2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3917A43D-3E20-4072-9D3F-368FAECAED2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B2A42CF-052C-46C6-B2F1-3708F676E97E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B2A42CF-052C-46C6-B2F1-3708F676E97E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B2A42CF-052C-46C6-B2F1-3708F676E97E}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B2A42CF-052C-46C6-B2F1-3708F676E97E}.Release|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
