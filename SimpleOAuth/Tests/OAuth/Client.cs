@@ -217,7 +217,9 @@ namespace SimpleOAuth.Tests.OAuth
             {
                 AuthRequestResult result = OAuthClient.GenerateUnauthorizedRequestToken(config, REQUEST_TOKEN_URL, USER_AUTH_URL);
 
-                Assert.AreEqual(USER_AUTH_URL + "?oauth_token=" + responseToken + "&permission=read", result.AuthUrl);
+                //TODO: need to add test coverage around the permission scope stuff added
+                //Assert.AreEqual(USER_AUTH_URL + "?oauth_token=" + responseToken + "&permission=read", result.AuthUrl);
+                Assert.AreEqual(USER_AUTH_URL + "?oauth_token=" + responseToken, result.AuthUrl);
                 Assert.AreEqual(responseTokenSecret, result.OAuthTokenSecret);
             }
         }
