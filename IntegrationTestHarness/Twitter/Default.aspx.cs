@@ -12,19 +12,7 @@ public partial class Twitter_Default : System.Web.UI.Page
     {
         get
         {
-            IProviderConfig result = null;
-            
-            switch (PageProvider)
-            {
-                case OAuthProviders.LinkedIn:
-                    result = new LinkedInConfig();
-                    break;
-                case OAuthProviders.Twitter:
-                    result = new TwitterConfig();
-                    break;
-            }
-
-            return result;
+            return ProviderConfigFactory.GetImplementation(PageProvider);
         }
     }
     protected OAuthProviders PageProvider
