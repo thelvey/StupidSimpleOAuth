@@ -56,7 +56,7 @@
         <Columns>
             <asp:TemplateField>
                 <ItemTemplate>
-                    <%# (Container.DataItem as dynamic).text %>
+                    <%# (Container.DataItem) %>
                 </ItemTemplate>
             </asp:TemplateField>
         </Columns>

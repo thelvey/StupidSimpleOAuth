@@ -20,6 +20,7 @@ public partial class Twitter_Default : System.Web.UI.Page
         string RequestLevel { get; }
         List<KeyValuePair<string, string>> DemoMethodArguments { get; }
         RequestLevelModes RequestLevelMode { get; }
+        List<string> TransposeResults(dynamic jsonResult);
     }
     protected class LinkedInConfig : IProviderConfig
     {
@@ -69,6 +70,17 @@ public partial class Twitter_Default : System.Web.UI.Page
                 return result;
             }
         }
+        public List<string> TransposeResults(dynamic jsonResult)
+        {
+            List<string> transposedResult = new List<string>();
+            List<dynamic> results = jsonResult.values as List<dynamic>;
+
+            foreach (dynamic d in results)
+            {
+                transposedResult.Add(d.firstName + " " + d.lastName);
+            }
+            return transposedResult;
+        }
     }
     protected class TwitterConfig : IProviderConfig
     {
@@ -107,6 +119,17 @@ public partial class Twitter_Default : System.Web.UI.Page
         public List<KeyValuePair<string, string>> DemoMethodArguments
         {
             get { return null; }
+        }
+        public List<string> TransposeResults(dynamic jsonResult)
+        {
+            List<string> transposedResult = new List<string>();
+            dynamic[] results = jsonResult as dynamic[];
+
+            foreach (dynamic d in results)
+            {
+                transposedResult.Add(d.text);
+            }
+            return transposedResult;
         }
     }
     protected IProviderConfig PageProviderConfig
@@ -207,7 +230,7 @@ public partial class Twitter_Default : System.Web.UI.Page
 
         dynamic tweets = OAuthClient.JsonMethod(config, PageProviderConfig.DemoMethodUrl, ltlAccessToken.Text, ltlAccessTokenSecret.Text, PageProviderConfig.DemoMethodArguments);
 
-        grdTweets.DataSource = tweets as object[];
+        grdTweets.DataSource = PageProviderConfig.TransposeResults(tweets);
         grdTweets.DataBind();
     }
     protected void btnReset_Click(object sender, EventArgs e)
